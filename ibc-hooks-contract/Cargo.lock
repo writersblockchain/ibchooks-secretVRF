@@ -79,8 +79,9 @@ checksum = "28c122c3980598d243d63d9a704629a2d748d101f278052ff068be5a4423ab6f"
 
 [[package]]
 name = "cosmwasm-derive"
-version = "1.1.10"
-source = "git+https://github.com/scrtlabs/cosmwasm?branch=ibc-msg-transfer-memo#84e47738906bece138850f579457cc211494492b"
+version = "1.5.3"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "bc5e72e330bd3bdab11c52b5ecbdeb6a8697a004c57964caeb5d876f0b088b3c"
 dependencies = [
  "syn 1.0.109",
 ]
@@ -307,6 +308,7 @@ version = "0.0.1"
 dependencies = [
  "schemars",
  "secret-cosmwasm-std",
+ "secret-cosmwasm-storage",
  "secret-toolkit",
  "serde",
  "serde-json-wasm 1.0.0",
@@ -448,8 +450,9 @@ dependencies = [
 
 [[package]]
 name = "secret-cosmwasm-crypto"
-version = "1.1.10"
-source = "git+https://github.com/scrtlabs/cosmwasm?branch=ibc-msg-transfer-memo#84e47738906bece138850f579457cc211494492b"
+version = "1.1.11"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "8535d61c88d0a6c222df2cebb69859d8e9ba419a299a1bc84c904b0d9c00c7b2"
 dependencies = [
  "digest 0.10.7",
  "ed25519-zebra",
@@ -460,8 +463,9 @@ dependencies = [
 
 [[package]]
 name = "secret-cosmwasm-std"
-version = "1.1.10"
-source = "git+https://github.com/scrtlabs/cosmwasm?branch=ibc-msg-transfer-memo#84e47738906bece138850f579457cc211494492b"
+version = "1.1.11"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "50e4393b01aa6587007161a6bb193859deaa8165ab06c8a35f253d329ff99e4d"
 dependencies = [
  "base64",
  "cosmwasm-derive",
@@ -478,8 +482,9 @@ dependencies = [
 
 [[package]]
 name = "secret-cosmwasm-storage"
-version = "1.1.10"
-source = "git+https://github.com/scrtlabs/cosmwasm?branch=ibc-msg-transfer-memo#84e47738906bece138850f579457cc211494492b"
+version = "1.1.11"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "bb43da2cb72a53b16ea1555bca794fb828b48ab24ebeb45f8e26f1881c45a783"
 dependencies = [
  "secret-cosmwasm-std",
  "serde",
@@ -487,9 +492,9 @@ dependencies = [
 
 [[package]]
 name = "secret-toolkit"
-version = "0.9.0"
+version = "0.10.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "cab1827d5c815f90ab46031b8e08623e1ccf6ca9c30087bac02254556eb7f7f7"
+checksum = "338c972c0a98de51ccbb859312eb7672bc64b9050b086f058748ba26a509edbb"
 dependencies = [
  "secret-toolkit-serialization",
  "secret-toolkit-snip20",
@@ -500,9 +505,9 @@ dependencies = [
 
 [[package]]
 name = "secret-toolkit-serialization"
-version = "0.9.0"
+version = "0.10.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "b416b839ab77988d9c74e89cfa9d337ad641a52695f26cde460d6675f3c85f94"
+checksum = "890adaeaa710f9f7068a807eb1553edc8c30ce9907290895c9097dd642fc613b"
 dependencies = [
  "bincode2",
  "schemars",
@@ -512,9 +517,9 @@ dependencies = [
 
 [[package]]
 name = "secret-toolkit-snip20"
-version = "0.9.0"
+version = "0.10.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "e916ef9f30c6ce1e5e02b3ad073828eb3629b28bc10b2d04f119cc26cbb5eef5"
+checksum = "8144a11df9a75adf42acd645f938eb2c1ab508d6672033eb84b1e672247d2f05"
 dependencies = [
  "schemars",
  "secret-cosmwasm-std",
@@ -524,9 +529,9 @@ dependencies = [
 
 [[package]]
 name = "secret-toolkit-snip721"
-version = "0.9.0"
+version = "0.10.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "ae5bbc745ba88a1f9a69ec177fd2f0d9c06ac13dea2d4f86087f21f7633fefc3"
+checksum = "cf2ab35fd2a52306f87ab8dceab75254cc1b87c95c43acf9e30c09372f0ee971"
 dependencies = [
  "schemars",
  "secret-cosmwasm-std",
@@ -536,9 +541,9 @@ dependencies = [
 
 [[package]]
 name = "secret-toolkit-storage"
-version = "0.9.0"
+version = "0.10.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "f65cc5f8db89dee874f9e5e5a697a10e88221882d877e54d3037d6d3e4c4ef4f"
+checksum = "55e8c5418af3e7ae1d1331c383b32d56c74a340dbc3b972d53555a768698f2a3"
 dependencies = [
  "secret-cosmwasm-std",
  "secret-cosmwasm-storage",
@@ -548,9 +553,9 @@ dependencies = [
 
 [[package]]
 name = "secret-toolkit-utils"
-version = "0.9.0"
+version = "0.10.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "e966b58b6dd90b88c89e597d19e07702cee3d942a9f8d56c307aad18b3f67801"
+checksum = "83f1cba2e70fd701e3dfc6072807c02eeeb9776bee49e346a9c7745d84ff40c8"
 dependencies = [
  "schemars",
  "secret-cosmwasm-std",
