@@ -1,11 +1,14 @@
 use cosmwasm_std::{
-    entry_point, to_binary, CosmosMsg, DepsMut, Env, IbcMsg, IbcTimeout, MessageInfo, Response,
-    StdResult,
+    entry_point, CosmosMsg, DepsMut, Env, IbcMsg, IbcTimeout, MessageInfo, Response,
+    StdResult, StdError, Uint64, Coin, Uint128
 };
 
 use crate::{
-    msg::{IBCLifecycleComplete, InstantiateMsg, Msg},
-    ContractError,
+    msg::{IBCLifecycleComplete, InstantiateMsg, Msg}
+};
+
+use secret_toolkit::{
+    crypto::{sha_256}
 };
 
 #[entry_point]
@@ -19,19 +22,14 @@ pub fn instantiate(
 }
 
 #[entry_point]
-pub fn execute(_deps: DepsMut, env: Env, info: MessageInfo, msg: Msg) -> StdResult<Response> {
+pub fn execute(deps: DepsMut, env: Env, info: MessageInfo, msg: Msg) -> StdResult<Response> {
     match msg {
-        // Msg::RequestRandom {
-        //     random_address,
-        //     random_code_hash,
-        // } => Ok(Response::default().add_messages(vec![CosmosMsg::Wasm(
-        //     cosmwasm_std::WasmMsg::Execute {
-        //         contract_addr: random_address.clone(),
-        //         code_hash: random_code_hash.clone(),
-        //         msg: to_binary(&ExecuteRandom {}).unwrap(),
-        //         funds: info.funds.clone(),
-        //     },
-        // )])),
+        Msg::RequestRandom {
+            num_words,
+            callback_channel_id,
+            callback_to_address,
+            timeout_sec_from_now,
+        } => try_execute_random(deps, env, info, num_words, callback_channel_id, callback_to_address, timeout_sec_from_now),
         Msg::IBCTransfer {
             channel_id,
             to_address,
@@ -80,12 +78,38 @@ pub fn execute(_deps: DepsMut, env: Env, info: MessageInfo, msg: Msg) -> StdResu
     }
 }
 
-pub fn try_execute_random(deps: DepsMut, env: Env) -> Result<Response, ContractError> {
-    let random_value = env.block.random.clone().unwrap();
-    let new_random = RandomBinary {
-        random_binary: random_value,
-    };
-    RANDOM_BINARY.save(deps.storage, &new_random)?;
+pub fn try_execute_random(_deps: DepsMut, env: Env, _info: MessageInfo, num_words: Uint64, callback_channel_id: String, callback_to_address: String, timeout_sec_from_now: Uint64) -> Result<Response, StdError> {
 
-    Ok(Response::default())
+    let base_random = match env.block.random {
+        Some(random_value) => random_value,
+        None => return Err(StdError::generic_err("No random value available")),
+    };
+
+    let mut random_numbers = Vec::new();
+
+    for i in 0..num_words.into() {
+        let mut data = base_random.0.clone();
+        data.extend_from_slice(&(i as u64).to_be_bytes());
+        let hashed_number = sha_256(&data); 
+        random_numbers.extend_from_slice(hashed_number.as_slice()); 
+    }
+
+    let result = base64::encode(random_numbers);
+    
+    let callback_memo = format!(
+        "{{\"ibc_callback\":\"{}\"}}",
+        result
+    );
+    
+    Ok(
+        Response::default().add_messages(vec![CosmosMsg::Ibc(IbcMsg::Transfer {
+            channel_id: callback_channel_id,
+            to_address: callback_to_address,
+            amount: Coin { denom: "uscrt".to_string(), amount: Uint128::new(1) },
+            timeout: IbcTimeout::with_timestamp(
+                env.block.time.plus_seconds(timeout_sec_from_now.u64()),
+            ),
+            memo: callback_memo,
+        })]),
+    )
 }

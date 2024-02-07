@@ -8,10 +8,12 @@ pub struct InstantiateMsg {}
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq, JsonSchema)]
 #[serde(rename_all = "snake_case")]
 pub enum Msg {
-    // RequestRandom {
-    //     random_address: String,
-    //     random_code_hash: String,
-    // },
+    RequestRandom {
+        num_words: Uint64,
+        callback_channel_id: String,
+        callback_to_address: String,
+        timeout_sec_from_now: Uint64
+    },
     #[serde(rename = "ibc_transfer")]
     IBCTransfer {
         channel_id: String,
