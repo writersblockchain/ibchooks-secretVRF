@@ -1,10 +1,12 @@
-use crate::random::RandomExecuteMsg::ExecuteRandom;
 use cosmwasm_std::{
     entry_point, to_binary, CosmosMsg, DepsMut, Env, IbcMsg, IbcTimeout, MessageInfo, Response,
     StdResult,
 };
 
-use crate::msg::{IBCLifecycleComplete, InstantiateMsg, Msg};
+use crate::{
+    msg::{IBCLifecycleComplete, InstantiateMsg, Msg},
+    ContractError,
+};
 
 #[entry_point]
 pub fn instantiate(
@@ -19,18 +21,17 @@ pub fn instantiate(
 #[entry_point]
 pub fn execute(_deps: DepsMut, env: Env, info: MessageInfo, msg: Msg) -> StdResult<Response> {
     match msg {
-        Msg::RequestRandom {
-            random_address,
-            random_code_hash,
-        } => Ok(Response::default().add_messages(vec![CosmosMsg::Wasm(
-            cosmwasm_std::WasmMsg::Execute {
-                contract_addr: random_address.clone(),
-                code_hash: random_code_hash.clone(),
-                msg: to_binary(&ExecuteRandom {}).unwrap(),
-                funds: info.funds.clone(),
-            },
-        )])),
-
+        // Msg::RequestRandom {
+        //     random_address,
+        //     random_code_hash,
+        // } => Ok(Response::default().add_messages(vec![CosmosMsg::Wasm(
+        //     cosmwasm_std::WasmMsg::Execute {
+        //         contract_addr: random_address.clone(),
+        //         code_hash: random_code_hash.clone(),
+        //         msg: to_binary(&ExecuteRandom {}).unwrap(),
+        //         funds: info.funds.clone(),
+        //     },
+        // )])),
         Msg::IBCTransfer {
             channel_id,
             to_address,
@@ -77,4 +78,14 @@ pub fn execute(_deps: DepsMut, env: Env, info: MessageInfo, msg: Msg) -> StdResu
             ]))
         }
     }
+}
+
+pub fn try_execute_random(deps: DepsMut, env: Env) -> Result<Response, ContractError> {
+    let random_value = env.block.random.clone().unwrap();
+    let new_random = RandomBinary {
+        random_binary: random_value,
+    };
+    RANDOM_BINARY.save(deps.storage, &new_random)?;
+
+    Ok(Response::default())
 }

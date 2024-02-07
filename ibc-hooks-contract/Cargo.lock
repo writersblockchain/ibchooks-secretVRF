@@ -312,6 +312,7 @@ dependencies = [
  "secret-toolkit",
  "serde",
  "serde-json-wasm 1.0.0",
+ "thiserror",
 ]
 
 [[package]]

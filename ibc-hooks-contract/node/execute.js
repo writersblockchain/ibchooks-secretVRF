@@ -27,8 +27,8 @@ let execute = async () => {
         source_channel: ibcChannelIdOnChain2,
         source_port: "transfer",
         token: {
-          amount: "123",
-          denom: "uscrt", //the token you want to IBC in and autowrap
+          amount: "1",
+          denom: "uscrt", //the token you want to IBC in
         },
         timeout_timestamp: String(Math.floor(Date.now() / 1000) + 10 * 60), // 10 minutes
         memo: JSON.stringify({
@@ -40,6 +40,7 @@ let execute = async () => {
                 random_code_hash: RNGCodeHash,
               },
             },
+            ibc_callback: hooksContractAddress,
           },
         }),
       },
