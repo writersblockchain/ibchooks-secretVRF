@@ -31,16 +31,18 @@ let execute = async () => {
           denom: "uscrt", //the token you want to IBC in
         },
         timeout_timestamp: String(Math.floor(Date.now() / 1000) + 10 * 60), // 10 minutes
+
         memo: JSON.stringify({
           wasm: {
             contract: hooksContractAddress,
             msg: {
               request_random: {
-                random_address: RNGContractAddress,
-                random_code_hash: RNGCodeHash,
+                num_words: 20,
+                callback_channel_id: "channel-XXXXX", // define this one
+                callback_to_address: "othersideAddress for testing",
+                timeout_sec_from_now: 900
               },
             },
-            ibc_callback: hooksContractAddress,
           },
         }),
       },
