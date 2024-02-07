@@ -5,18 +5,14 @@ dotenv.config();
 const wallet = new Wallet(process.env.MNEMONIC);
 
 const secretjs = new SecretNetworkClient({
-  chainId: "pulsar-3",
-  url: "https://api.pulsar3.scrttestnet.com",
+  chainId: "axelar-testnet-lisbon-3",
+  url: "https://rpc-axelar-testnet.imperator.co:443",
   wallet: wallet,
   walletAddress: wallet.address,
 });
 
-const hooksContractAddress = process.env.HOOKS_CONTRACT_ADDRESS;
-const ibcChannelIdOnChain2 = "channel-3";
-
-const RNGContractAddress = "secret15qra5alm78aut6ejlpv5uwje3qj33gtke52psk";
-const RNGCodeHash =
-  "d2da0e5562d7300803096c07f8f696e55f5d9ea11dc021e476fb0d01786a8907";
+const hooksContractAddress = "secret1pfd7pxxvuuaz69n2klfmpeplchv2y7clhs4xhm";
+const ibcChannelIdOnChain2 = "channel-311";
 
 let execute = async () => {
   try {
@@ -28,7 +24,7 @@ let execute = async () => {
         source_port: "transfer",
         token: {
           amount: "1",
-          denom: "uscrt", //the token you want to IBC in
+          denom: "ibc/898741B7C169F5E82640382F30DDF19DEE029683B93D679ABC35DCF0458E1E38", //the token you want to IBC in
         },
         timeout_timestamp: String(Math.floor(Date.now() / 1000) + 10 * 60), // 10 minutes
 
@@ -38,8 +34,8 @@ let execute = async () => {
             msg: {
               request_random: {
                 num_words: 20,
-                callback_channel_id: "channel-XXXXX", // define this one
-                callback_to_address: "othersideAddress for testing",
+                callback_channel_id: "channel-3", // define this one
+                callback_to_address: "axelar1r665g4jg649zce3u8q9d0qzzq7wehxjsq30hrz",
                 timeout_sec_from_now: 900
               },
             },
