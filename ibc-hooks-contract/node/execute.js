@@ -2,11 +2,11 @@ import { SecretNetworkClient, Wallet } from "secretjs";
 import dotenv from "dotenv";
 dotenv.config();
 
-const wallet = new Wallet(process.env.MNEMONIC);
+const wallet = new Wallet(process.env.MNEMONIC, {bech32Prefix: "axelar"} );
 
 const secretjs = new SecretNetworkClient({
   chainId: "axelar-testnet-lisbon-3",
-  url: "https://rpc-axelar-testnet.imperator.co:443",
+  url: "https://lcd-axelar-testnet.imperator.co:443",
   wallet: wallet,
   walletAddress: wallet.address,
 });
@@ -48,6 +48,8 @@ let execute = async () => {
         ibcTxsOptions: {
           resolveResponsesCheckIntervalMs: 250,
         },
+        feeDenom: "uaxl",
+        gasLimit: 400000
       }
     );
     console.log("Transaction successful:", tx);
