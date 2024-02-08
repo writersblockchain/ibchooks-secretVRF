@@ -1,4 +1,4 @@
-use cosmwasm_std::{Coin, Uint64};
+use cosmwasm_std::{Uint64};
 use schemars::JsonSchema;
 use serde::{Deserialize, Serialize};
 
@@ -9,18 +9,8 @@ pub struct InstantiateMsg {}
 #[serde(rename_all = "snake_case")]
 pub enum Msg {
     RequestRandom {
-        request_id: String,
+        job_id: String,
         num_words: Uint64,
-        callback_channel_id: String,
-        callback_to_address: String,
-        timeout_sec_from_now: Uint64
-    },
-    #[serde(rename = "ibc_transfer")]
-    IBCTransfer {
-        channel_id: String,
-        to_address: String,
-        amount: Coin,
-        timeout_sec_from_now: Uint64,
     },
     #[serde(rename = "ibc_lifecycle_complete")]
     IBCLifecycleComplete(IBCLifecycleComplete),
