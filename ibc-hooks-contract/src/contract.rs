@@ -30,26 +30,7 @@ pub fn execute(deps: DepsMut, env: Env, info: MessageInfo, msg: Msg) -> StdResul
             callback_channel_id,
             callback_to_address,
             timeout_sec_from_now,
-        } => try_execute_random(deps, env, info, request_id, num_words, callback_channel_id, callback_to_address, timeout_sec_from_now),
-        Msg::IBCTransfer {
-            channel_id,
-            to_address,
-            amount,
-            timeout_sec_from_now,
-        } => Ok(
-            Response::default().add_messages(vec![CosmosMsg::Ibc(IbcMsg::Transfer {
-                channel_id,
-                to_address: to_address,
-                amount: amount,
-                timeout: IbcTimeout::with_timestamp(
-                    env.block.time.plus_seconds(timeout_sec_from_now.u64()),
-                ),
-                memo: format!(
-                    "{{\"ibc_callback\":\"{}\"}}",
-                    env.contract.address.to_string()
-                ),
-            })]),
-        ),
+        } => try_execute_random(deps, env, info, request_id, num_words, callback_channel_id, callback_to_address, timeout_sec_from_now)
         Msg::IBCLifecycleComplete(IBCLifecycleComplete::IBCAck {
             channel,
             sequence,
@@ -79,7 +60,7 @@ pub fn execute(deps: DepsMut, env: Env, info: MessageInfo, msg: Msg) -> StdResul
     }
 }
 
-pub fn try_execute_random(_deps: DepsMut, env: Env, _info: MessageInfo, request_id: Uint64, num_words: Uint64, callback_channel_id: String, callback_to_address: String, timeout_sec_from_now: Uint64) -> Result<Response, StdError> {
+pub fn try_execute_random(_deps: DepsMut, env: Env, _info: MessageInfo, request_id: String, num_words: Uint64, callback_channel_id: String, callback_to_address: String, timeout_sec_from_now: Uint64) -> Result<Response, StdError> {
      
     //get base random from secret VRF
     let base_random = match env.block.random {
