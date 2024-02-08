@@ -11,7 +11,7 @@ const secretjs = new SecretNetworkClient({
   walletAddress: wallet.address,
 });
 
-const hooksContractAddress = "secret1pfd7pxxvuuaz69n2klfmpeplchv2y7clhs4xhm";
+const hooksContractAddress = "secret1l38w2rgvapuppcjgpsgn6a6g8qcg9qz4nmfeu8";
 const ibcChannelIdOnChain2 = "channel-311";
 
 let execute = async () => {
@@ -33,10 +33,11 @@ let execute = async () => {
             contract: hooksContractAddress,
             msg: {
               request_random: {
-                num_words: 20,
+                request_id: "1",
+                num_words: "20",
                 callback_channel_id: "channel-3", // define this one
-                callback_to_address: "axelar1r665g4jg649zce3u8q9d0qzzq7wehxjsq30hrz",
-                timeout_sec_from_now: 900
+                callback_to_address: "axelar1j7n3xx4sfgjea4unghd78qvnvxdz49cxag5pf0",
+                timeout_sec_from_now: "900"
               },
             },
           },

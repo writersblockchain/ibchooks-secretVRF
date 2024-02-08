@@ -9,6 +9,7 @@ pub struct InstantiateMsg {}
 #[serde(rename_all = "snake_case")]
 pub enum Msg {
     RequestRandom {
+        request_id: Uint64,
         num_words: Uint64,
         callback_channel_id: String,
         callback_to_address: String,
