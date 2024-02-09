@@ -1,10 +1,10 @@
 use cosmwasm_std::{
-    entry_point, CosmosMsg, DepsMut, Env, IbcMsg, IbcTimeout, MessageInfo, Response,
-    StdResult, StdError, Uint64, Coin, Uint128, Binary 
+    entry_point, to_binary, CosmosMsg, DepsMut, Env, IbcMsg, IbcTimeout, MessageInfo, Response,
+    StdResult, StdError, Uint64, Coin, Uint128, Binary, Deps
 };
 
 use crate::{
-    msg::{IBCLifecycleComplete, InstantiateMsg, Msg},
+    msg::{IBCLifecycleComplete, InstantiateMsg, Msg, PublicKeyResponse, QueryMsg},
     state::{KeyPair, State, CONFIG}
 };
 
@@ -17,9 +17,18 @@ use secret_toolkit::{
 pub fn instantiate(
     deps: DepsMut,
     env: Env,
-    _info: MessageInfo,
+    info: MessageInfo,
     _msg: InstantiateMsg,
 ) -> StdResult<Response> {
+    // Save both key pairs
+    let creator_raw = deps.api.addr_canonicalize(info.sender.as_str())?;
+    let state = State {
+        admin: creator_raw,
+        keyed: false,
+        signing_keys: KeyPair::default(),
+    };
+
+    CONFIG.save(deps.storage, &state)?;
     let _result = create_signing_keys(deps, env);
     Ok(Response::default())
 }
@@ -90,9 +99,10 @@ pub fn try_execute_random(deps: DepsMut, env: Env, _info: MessageInfo, job_id: S
     let mut signing_key_bytes = [0u8; 32];
     signing_key_bytes.copy_from_slice(config.signing_keys.sk.as_slice());
 
-    // used in production to create signature
-    #[cfg(target_arch = "wasm32")]
-    let signature = deps.api.secp256k1_sign(result.as_bytes(), &signing_key_bytes)
+    // used in production to create signature. 
+    //This will automatically do a sha256 of the bytes and then sign them. 
+    //KEEP THIS IN MIND WHEN VERIFYING THE SIGNATURE!!
+    let signature = deps.api.secp256k1_sign([job_id.clone(), result.clone()].concat().as_bytes(), &signing_key_bytes)
         .map_err(|err| StdError::generic_err(err.to_string()))?;
 
     let callback_memo = format!(
@@ -156,4 +166,20 @@ fn create_signing_keys(deps: DepsMut, env: Env) -> StdResult<Response> {
 
     Ok(Response::new()
         .add_attribute_plaintext("signing_pubkey", signing_pubkey))
+}
+
+#[entry_point]
+pub fn query(deps: Deps, _env: Env, msg: QueryMsg) -> StdResult<Binary> {
+    let response = match msg {
+        QueryMsg::GetPublicKey {} => query_public_key(deps),
+    };
+    Ok(response.unwrap())
+}
+
+// the encryption key will be a base64 string
+fn query_public_key(deps: Deps) -> StdResult<Binary> {
+    let state: State = CONFIG.load(deps.storage)?;
+    to_binary(&PublicKeyResponse {
+        signing_keys: state.signing_keys.pk,
+    })
 }

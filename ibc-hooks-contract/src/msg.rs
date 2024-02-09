@@ -1,4 +1,4 @@
-use cosmwasm_std::{Uint64};
+use cosmwasm_std::{Uint64, Binary};
 use schemars::JsonSchema;
 use serde::{Deserialize, Serialize};
 
@@ -17,6 +17,18 @@ pub enum Msg {
     },
     #[serde(rename = "ibc_lifecycle_complete")]
     IBCLifecycleComplete(IBCLifecycleComplete),
+}
+#[derive(Serialize, Deserialize, Clone, Debug, PartialEq, JsonSchema)]
+pub struct PublicKeyResponse {
+    /// Base64 encoded string.
+    pub signing_keys: Binary,
+}
+
+#[derive(Serialize, Deserialize, Clone, Debug, PartialEq, JsonSchema)]
+#[serde(rename_all = "snake_case")]
+pub enum QueryMsg {
+    /// Query the VRF verification key.
+    GetPublicKey {},
 }
 
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq, JsonSchema)]

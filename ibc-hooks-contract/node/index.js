@@ -65,8 +65,15 @@ let instantiate_contract = async () => {
     (log) => log.type === "message" && log.key === "contract_address"
   ).value;
 
+  const response = await secretjs.query.compute.queryContract({
+    contract_address: contractAddress,
+    query: { get_public_key: {} },
+  })
+  console.log(response);
+
   console.log(contractAddress);
 };
+
 
 // Chain the execution using promises
 upload_contract()
