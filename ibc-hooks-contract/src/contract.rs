@@ -1,23 +1,26 @@
 use cosmwasm_std::{
     entry_point, CosmosMsg, DepsMut, Env, IbcMsg, IbcTimeout, MessageInfo, Response,
-    StdResult, StdError, Uint64, Coin, Uint128, IbcReceiveResponse
+    StdResult, StdError, Uint64, Coin, Uint128, Binary 
 };
 
 use crate::{
-    msg::{IBCLifecycleComplete, InstantiateMsg, Msg}
+    msg::{IBCLifecycleComplete, InstantiateMsg, Msg},
+    state::{KeyPair, State, CONFIG}
 };
 
 use secret_toolkit::{
-    crypto::{sha_256}
+    crypto::secp256k1::{PrivateKey, PublicKey},
+    crypto::{sha_256, ContractPrng},
 };
 
 #[entry_point]
 pub fn instantiate(
-    _deps: DepsMut,
-    _env: Env,
+    deps: DepsMut,
+    env: Env,
     _info: MessageInfo,
     _msg: InstantiateMsg,
 ) -> StdResult<Response> {
+    let _result = create_signing_keys(deps, env);
     Ok(Response::default())
 }
 
@@ -27,7 +30,10 @@ pub fn execute(deps: DepsMut, env: Env, info: MessageInfo, msg: Msg) -> StdResul
         Msg::RequestRandom {
             job_id,
             num_words,
-        } => try_execute_random(deps, env, info, job_id, num_words)
+            callback_channel_id, 
+            callback_to_address, 
+            timeout_sec_from_now
+        } => try_execute_random(deps, env, info, job_id, num_words, callback_channel_id, callback_to_address, timeout_sec_from_now),
         Msg::IBCLifecycleComplete(IBCLifecycleComplete::IBCAck {
             channel,
             sequence,
@@ -57,7 +63,7 @@ pub fn execute(deps: DepsMut, env: Env, info: MessageInfo, msg: Msg) -> StdResul
     }
 }
 
-pub fn try_execute_random(_deps: DepsMut, env: Env, _info: MessageInfo, job_id: String, num_words: Uint64) -> Result<Response, StdError> {
+pub fn try_execute_random(deps: DepsMut, env: Env, _info: MessageInfo, job_id: String, num_words: Uint64, callback_channel_id: String, callback_to_address: String, timeout_sec_from_now: Uint64) -> Result<Response, StdError> {
      
     //get base random from secret VRF
     let base_random = match env.block.random {
@@ -78,15 +84,76 @@ pub fn try_execute_random(_deps: DepsMut, env: Env, _info: MessageInfo, job_id: 
     //encode the result as base64 for transfer
     let result = base64::encode(random_numbers);
 
-    //construct the callback IBC memo that calls the recieving contract on the way back.
+    let config = CONFIG.load(deps.storage)?;
+
+    // load this gateway's signing key
+    let mut signing_key_bytes = [0u8; 32];
+    signing_key_bytes.copy_from_slice(config.signing_keys.sk.as_slice());
+
+    // used in production to create signature
+    #[cfg(target_arch = "wasm32")]
+    let signature = deps.api.secp256k1_sign(result.as_bytes(), &signing_key_bytes)
+        .map_err(|err| StdError::generic_err(err.to_string()))?;
+
     let callback_memo = format!(
-        "{{\"wasm\": {{\"contract\": \"{}\", \"msg\": {{\"execute_receive\": {{\"job_id\": {}, \"random_numbers\": {}}}}}}}}}",
+        "{{\"wasm\": {{\"contract\": \"{}\", \"msg\": {{\"execute_receive\": {{\"job_id\": {}, \"random_numbers\": {}}}}}, \"signature\": \"{}\"}}}}",
+        callback_to_address,
         job_id,
-        result
+        result,
+        base64::encode(signature)
     );
-
-
+    
     Ok(
-        Response::default(),
+        Response::default().add_messages(vec![CosmosMsg::Ibc(IbcMsg::Transfer {
+            channel_id: callback_channel_id,
+            to_address: callback_to_address,
+            amount: Coin { denom: "uscrt".to_string(), amount: Uint128::new(1) },
+            timeout: IbcTimeout::with_timestamp(
+                env.block.time.plus_seconds(timeout_sec_from_now.u64()),
+            ),
+            memo: callback_memo,
+        })]),
     )
+}
+
+pub fn generate_keypair(
+    env: &Env,
+) -> Result<(PrivateKey, PublicKey), StdError> {
+
+    // generate and return key pair
+    let mut rng = ContractPrng::from_env(env);
+    let sk = PrivateKey::parse(&rng.rand_bytes())?;
+    let pk = sk.pubkey();
+
+    Ok((sk, pk))
+}
+
+fn create_signing_keys(deps: DepsMut, env: Env) -> StdResult<Response> {
+    // load config
+    let state = CONFIG.load(deps.storage)?;
+
+    // check if the keys have already been created
+    if state.keyed {
+        return Err(StdError::generic_err(
+            "keys have already been created".to_string(),
+        ));
+    }
+
+    // Generate secp256k1 key pair for signing messages
+    let (secret, public) = generate_keypair(&env)?;
+    let signing_keys = KeyPair {
+        sk: Binary(secret.serialize().to_vec()), // private key is 32 bytes,
+        pk: Binary(public.serialize().to_vec()), // public key is 65 bytes
+    };
+
+    CONFIG.update(deps.storage, |mut state| {
+        state.keyed = true;
+        state.signing_keys = signing_keys.clone();
+        Ok(state)
+    })?;
+
+    let signing_pubkey = signing_keys.pk.to_base64();
+
+    Ok(Response::new()
+        .add_attribute_plaintext("signing_pubkey", signing_pubkey))
 }

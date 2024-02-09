@@ -332,6 +332,7 @@ dependencies = [
  "secret-cosmwasm-std",
  "secret-cosmwasm-storage",
  "secret-toolkit",
+ "secret-toolkit-crypto",
  "secret-toolkit-serialization",
  "serde",
  "serde-json-wasm 1.0.1",

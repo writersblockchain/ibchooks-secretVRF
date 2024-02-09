@@ -11,6 +11,9 @@ pub enum Msg {
     RequestRandom {
         job_id: String,
         num_words: Uint64,
+        callback_channel_id: String,
+        callback_to_address: String,
+        timeout_sec_from_now: Uint64
     },
     #[serde(rename = "ibc_lifecycle_complete")]
     IBCLifecycleComplete(IBCLifecycleComplete),
