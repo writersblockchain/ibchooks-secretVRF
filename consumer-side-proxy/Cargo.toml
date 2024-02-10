@@ -34,6 +34,7 @@ ibc3 = ["stargate"]
 cosmwasm-std = { version = "1.5.0", features = ["ibc3"] }
 cw-storage-plus = "1.2.0"
 cosmwasm-schema = "1.5.0"
+anybuf = "0.3.0"
 
 schemars = "0.8.16"
 serde = { version = "1.0.193", default-features = false, features = ["derive"] }

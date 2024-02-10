@@ -1,12 +1,12 @@
-use cosmwasm_std::{entry_point, to_json_binary, DepsMut, Env, IbcMsg, MessageInfo, Response, StdResult, Uint128, Uint64};
+use cosmwasm_std::{entry_point, to_json_binary, Binary, Coin, CosmosMsg::Stargate, DepsMut, Env, IbcTimeoutBlock, MessageInfo, Response, StdResult, Uint128, Uint64};
 
-use crate::ibc::Ics20Packet;
 use crate::msg::{ExecuteMsg, InstantiateMsg};
+use anybuf::Anybuf;
 
-const SECRET_VRF_CONTRACT_ADDRESS: &str = "secret1qvkg5twz0gydr0fs7eqlwehzj4ehfvadeaznn6";
-const SECRET_VRF_VERIFICATION_KEY: &str = "BNtlc9vlRCATKKM+OyqN6bEy/t4PW8CaxAgjC0hUMJzzUOPFONVyogCjRHbuVlv5jkD3xwB2YaaFEt9QNVtox2Y=";
-const SECRET_TRANSFER_CHANNEL_ID: &str = "channel-3";
-
+const SECRET_VRF_CONTRACT_ADDRESS: &str = "secret1n8l2qrkxhqt9sk9raux5ju22elk60080walrue";
+const SECRET_VRF_VERIFICATION_KEY: &str = "BMaKDLqG2Ren2ujxcg6NUWnQHt8yetZI98tYjL+sZRq1URSKgaxRToOSHP+GnOedKTLvL/e1AF+3hn90zDo4F4k=";
+const SECRET_TRANSFER_CHANNEL_ID: &str = "channel-8";
+const CHAIN_TRANSFER_CHANNEL_ID: &str = "channel-48";
 
 // Instantiate entry point
 #[entry_point]
@@ -48,29 +48,31 @@ fn request_random(deps: DepsMut, env: Env, job_id: String, num_words: Uint64) ->
         job_id,
         num_words,
         SECRET_TRANSFER_CHANNEL_ID,
-        env.contract.address.as_str(),
+        env.contract.address,
         timeout_sec_from_now.to_string()
     );
-    let timeout = env.block.time.plus_seconds(timeout_sec_from_now);
 
-    // build ics20 packet
-    let packet = Ics20Packet::new(
-        Uint128::new(1),
-        "uscrt".to_string(),
-        &env.contract.address.to_string(),
-        SECRET_VRF_CONTRACT_ADDRESS,
-        ibc_hook_memo
-    );
-    packet.validate()?;
+    let ibc_msg_transfer = Anybuf::new()
+        .append_string(1, "transfer") // source port
+        .append_string(2, CHAIN_TRANSFER_CHANNEL_ID.to_string()) // source channel
+        .append_message(
+            3,
+            &Anybuf::new()
+                .append_string(1, "ujuno")
+                .append_string(2, "1".to_string()),
+        ) // Token
+        .append_string(4, env.contract.address) // sender
+        .append_string(5, SECRET_VRF_CONTRACT_ADDRESS.to_string()) // receiver
+        .append_message(6, &Anybuf::new().append_uint64(1, 0).append_uint64(2, 0)) // TimeoutHeight
+        .append_uint64(7, env.block.time.plus_seconds(timeout_sec_from_now).nanos()) // TimeoutTimestamp
+        .append_string(8, ibc_hook_memo); // Memo
 
-    // prepare ibc message
-    let msg = IbcMsg::SendPacket {
-        channel_id: SECRET_TRANSFER_CHANNEL_ID.to_string(),
-        data: to_json_binary(&packet)?,
-        timeout: timeout.into(),
+    // Construct a CosmosMsg::Stargate message with the serialized data
+    let msg = Stargate {
+        type_url: "/ibc.applications.transfer.v1.MsgTransfer".to_string(),
+        value:  ibc_msg_transfer.into_vec().into()
     };
 
-    Ok(
-        Response::new().add_message(msg)
-    )
+    // Return the response with your custom IBC message included
+    Ok(Response::new().add_message(msg))
 }

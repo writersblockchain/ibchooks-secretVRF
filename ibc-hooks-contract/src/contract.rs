@@ -72,7 +72,7 @@ pub fn execute(deps: DepsMut, env: Env, info: MessageInfo, msg: Msg) -> StdResul
     }
 }
 
-pub fn try_execute_random(deps: DepsMut, env: Env, _info: MessageInfo, job_id: String, num_words: Uint64, callback_channel_id: String, callback_to_address: String, timeout_sec_from_now: Uint64) -> Result<Response, StdError> {
+pub fn try_execute_random(deps: DepsMut, env: Env, info: MessageInfo, job_id: String, num_words: Uint64, callback_channel_id: String, callback_to_address: String, timeout_sec_from_now: Uint64) -> Result<Response, StdError> {
      
     //get base random from secret VRF
     let base_random = match env.block.random {
@@ -117,7 +117,7 @@ pub fn try_execute_random(deps: DepsMut, env: Env, _info: MessageInfo, job_id: S
         Response::default().add_messages(vec![CosmosMsg::Ibc(IbcMsg::Transfer {
             channel_id: callback_channel_id,
             to_address: callback_to_address,
-            amount: Coin { denom: "uscrt".to_string(), amount: Uint128::new(1) },
+            amount: Coin { denom: info.funds[0].denom.clone(), amount: info.funds[0].amount.clone() },
             timeout: IbcTimeout::with_timestamp(
                 env.block.time.plus_seconds(timeout_sec_from_now.u64()),
             ),
