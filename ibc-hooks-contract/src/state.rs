@@ -1,4 +1,4 @@
-use cosmwasm_std::{Addr, Binary, CanonicalAddr};
+use cosmwasm_std::{Binary, CanonicalAddr};
 use secret_toolkit::storage::{Item};
 
 use schemars::JsonSchema;

@@ -1,6 +1,6 @@
 use cosmwasm_std::{
     entry_point, to_binary, CosmosMsg, DepsMut, Env, IbcMsg, IbcTimeout, MessageInfo, Response,
-    StdResult, StdError, Uint64, Coin, Uint128, Binary, Deps
+    StdResult, StdError, Uint64, Coin, Binary, Deps
 };
 
 use crate::{
@@ -91,7 +91,7 @@ pub fn try_execute_random(deps: DepsMut, env: Env, info: MessageInfo, job_id: St
     }
 
     //encode the result as base64 for transfer
-    let result = base64::encode(random_numbers);
+    let random_numbers_base64 = base64::encode(random_numbers);
 
     let config = CONFIG.load(deps.storage)?;
 
@@ -102,14 +102,14 @@ pub fn try_execute_random(deps: DepsMut, env: Env, info: MessageInfo, job_id: St
     // used in production to create signature. 
     //This will automatically do a sha256 of the bytes and then sign them. 
     //KEEP THIS IN MIND WHEN VERIFYING THE SIGNATURE!!
-    let signature = deps.api.secp256k1_sign([job_id.clone(), result.clone()].concat().as_bytes(), &signing_key_bytes)
+    let signature = deps.api.secp256k1_sign([job_id.clone(), random_numbers_base64.clone()].concat().as_bytes(), &signing_key_bytes)
         .map_err(|err| StdError::generic_err(err.to_string()))?;
 
     let callback_memo = format!(
-        "{{\"wasm\": {{\"contract\": \"{}\", \"msg\": {{\"execute_receive\": {{\"job_id\": {}, \"random_numbers\": {}}}}}, \"signature\": \"{}\"}}}}",
+        "{{\"wasm\": {{\"contract\": \"{}\", \"msg\": {{\"receive_random\": {{\"job_id\": \"{}\", \"randomness\": \"{}\", \"signature\": \"{}\"}}}}}}}}",
         callback_to_address,
         job_id,
-        result,
+        random_numbers_base64,
         base64::encode(signature)
     );
     

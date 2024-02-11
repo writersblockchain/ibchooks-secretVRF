@@ -4,9 +4,9 @@ version = 3
 
 [[package]]
 name = "ahash"
-version = "0.7.7"
+version = "0.7.8"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "5a824f2aa7e75a0c98c5a504fceb80649e9c35265d44525b5f94de4771a395cd"
+checksum = "891477e0c6a8957309ee5c45a6368af3ae14bb510732d2684ffa19af310920f9"
 dependencies = [
  "getrandom",
  "once_cell",
@@ -518,6 +518,7 @@ name = "secret_ibc_rng_consumer_side_proxy"
 version = "0.1.0"
 dependencies = [
  "anybuf",
+ "base64",
  "cosmwasm-schema",
  "cosmwasm-std",
  "cw-storage-plus",
@@ -525,6 +526,7 @@ dependencies = [
  "schemars",
  "serde",
  "serde-json-wasm 1.0.1",
+ "sha2 0.10.8",
 ]
 
 [[package]]
