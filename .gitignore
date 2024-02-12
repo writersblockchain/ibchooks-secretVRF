@@ -1,4 +1,3 @@
-
 .DS_Store
-consumer-side-proxy/artifacts/checksums.txt
-consumer-side-proxy/artifacts/secret_ibc_rng_consumer_side_proxy.wasm
+consumer-side/artifacts
+consumer-side/node/node_modules

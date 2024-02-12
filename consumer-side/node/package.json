@@ -1,0 +1,19 @@
+{
+  "name": "node",
+  "version": "1.0.0",
+  "type": "module",
+  "description": "",
+  "main": "execute.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "dotenv": "^16.4.3",
+    "@blake.regalia/belt": "^0.31.1",
+    "@solar-republic/cosmos-grpc": "^0.13.0",
+    "@solar-republic/neutrino": "^1.0.6"
+  }
+}
