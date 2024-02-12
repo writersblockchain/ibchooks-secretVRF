@@ -1,4 +1,4 @@
-import { json_to_bytes } from "@blake.regalia/belt";
+import { json_to_bytes, hex_to_bytes } from "@blake.regalia/belt";
 import {
   Wallet,
   broadcast_result,
@@ -14,59 +14,58 @@ import dotenv from "dotenv";
 dotenv.config();
 
 let execute = async () => {
-  const privateKey = process.env.PRIVATE_KEY;
-
-  const lcdUrl = "https://rest-juno.architectnodes.com";
+  const privateKey = hex_to_bytes(process.env.PRIVATE_KEY);
+  const lcdUrl = "https://lcd-juno.whispernode.com:443";
   const rpcUrl = "https://rpc-juno-ia.cosmosia.notional.ventures/";
 
   const junoWallet = await Wallet(privateKey, "juno-1", lcdUrl, rpcUrl);
 
-  console.log(junoWallet);
+  //   console.log(junoWallet);
 
-  //   const [httpResponse, resultText, resultStruct] =
-  //     await queryCosmosBankAllBalances(junoWallet.lcd, junoWallet.addr);
+  const [httpResponse, resultText, resultStruct] =
+    await queryCosmosBankAllBalances(junoWallet.lcd, junoWallet.addr);
 
-  //   if (
-  //     !resultStruct ||
-  //     !resultStruct.balances ||
-  //     !resultStruct.balances.length
-  //   ) {
-  //     throw Error(`Account ${junoWallet.addr} has no balances`);
-  //   }
+  if (
+    !resultStruct ||
+    !resultStruct.balances ||
+    !resultStruct.balances.length
+  ) {
+    throw Error(`Account ${junoWallet.addr} has no balances`);
+  }
 
-  //   const message = encodeGoogleProtobufAny(
-  //     SI_MESSAGE_TYPE_COSMWASM_WASM_MSG_EXECUTE_CONTRACT,
-  //     encodeCosmwasmWasmMsgExecuteContract(
-  //       junoWallet.addr,
-  //       "juno1anh4pf98fe8uh64uuhaasqdmg89qe6kk5xsklxuvtjmu6rhpg53sj9uejj",
-  //       json_to_bytes({
-  //         mint: {
-  //           token_id: "1",
-  //         },
-  //       })
-  //     )
-  //   );
+  const message = encodeGoogleProtobufAny(
+    SI_MESSAGE_TYPE_COSMWASM_WASM_MSG_EXECUTE_CONTRACT,
+    encodeCosmwasmWasmMsgExecuteContract(
+      junoWallet.addr,
+      process.env.CONSUMER_CONTRACT,
+      json_to_bytes({
+        request_random: {
+          job_id: "10",
+        },
+      })
+    )
+  );
 
-  //   const gasLimit = 150_000n; // BigInt is a part of modern JavaScript
-  //   const gasAmount = Math.ceil(Number(gasLimit) * 0.125);
+  const gasLimit = 150_000n; // BigInt is a part of modern JavaScript
+  const gasAmount = Math.ceil(Number(gasLimit) * 0.125);
 
-  //   const [txRawBytes, signDoc, txHash] = await create_and_sign_tx_direct(
-  //     junoWallet,
-  //     [message],
-  //     [[`${gasAmount}`, "ujuno"]],
-  //     `${gasLimit}`
-  //   );
+  const [txRawBytes, signDoc, txHash] = await create_and_sign_tx_direct(
+    junoWallet,
+    [message],
+    [[`${gasAmount}`, "ujuno"]],
+    `${gasLimit}`
+  );
 
-  //   const [errorCode, responseText, result] = await broadcast_result(
-  //     junoWallet,
-  //     txRawBytes,
-  //     txHash
-  //   );
+  const [errorCode, responseText, result] = await broadcast_result(
+    junoWallet,
+    txRawBytes,
+    txHash
+  );
 
-  //   if (result) {
-  //     console.log(
-  //       `Gas used: ${result.result ? result.result.gas_used : "unknown"}`
-  //     );
-  //   }
+  if (result) {
+    console.log(
+      `Gas used: ${result.result ? result.result.gas_used : "unknown"}`
+    );
+  }
 };
 execute();
