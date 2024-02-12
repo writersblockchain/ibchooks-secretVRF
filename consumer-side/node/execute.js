@@ -13,14 +13,16 @@ import {
 import dotenv from "dotenv";
 dotenv.config();
 
+// import {XC_PROTO_COSMOS_TX_BROADCAST_MODE_SYNC, submitCosmosTxBroadcastTx} from '@solar-republic/cosmos-grpc/cosmos/tx/v1beta1/service';
+
 let execute = async () => {
   const privateKey = hex_to_bytes(process.env.PRIVATE_KEY);
-  const lcdUrl = "https://lcd-juno.whispernode.com:443";
-  const rpcUrl = "https://rpc-juno-ia.cosmosia.notional.ventures/";
+  const lcdUrl = "https://juno-api.lavenderfive.com:443";
+  const rpcUrl = "https://rpc.juno.chaintools.tech";
 
   const junoWallet = await Wallet(privateKey, "juno-1", lcdUrl, rpcUrl);
 
-  //   console.log(junoWallet);
+  // console.log(junoWallet);
 
   const [httpResponse, resultText, resultStruct] =
     await queryCosmosBankAllBalances(junoWallet.lcd, junoWallet.addr);
@@ -32,6 +34,8 @@ let execute = async () => {
   ) {
     throw Error(`Account ${junoWallet.addr} has no balances`);
   }
+
+  console.log(resultStruct);
 
   const message = encodeGoogleProtobufAny(
     SI_MESSAGE_TYPE_COSMWASM_WASM_MSG_EXECUTE_CONTRACT,
