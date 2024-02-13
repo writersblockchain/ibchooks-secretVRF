@@ -1,3 +1,4 @@
 .DS_Store
 consumer-side/artifacts
 consumer-side/node/node_modules
+.env*

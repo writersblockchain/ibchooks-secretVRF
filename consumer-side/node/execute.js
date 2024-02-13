@@ -18,11 +18,9 @@ dotenv.config();
 let execute = async () => {
   const privateKey = hex_to_bytes(process.env.PRIVATE_KEY);
   const lcdUrl = "https://juno-api.lavenderfive.com:443";
-  const rpcUrl = "https://rpc.juno.chaintools.tech";
+  const rpcUrl = "https://juno-rpc.lavenderfive.com:443";
 
   const junoWallet = await Wallet(privateKey, "juno-1", lcdUrl, rpcUrl);
-
-  // console.log(junoWallet);
 
   const [httpResponse, resultText, resultStruct] =
     await queryCosmosBankAllBalances(junoWallet.lcd, junoWallet.addr);
@@ -44,13 +42,14 @@ let execute = async () => {
       process.env.CONSUMER_CONTRACT,
       json_to_bytes({
         request_random: {
-          job_id: "10",
+          job_id: "sean-test",
         },
-      })
+      }),
+      [["1", "ujuno"]]
     )
   );
 
-  const gasLimit = 150_000n; // BigInt is a part of modern JavaScript
+  const gasLimit = 200_000n; // BigInt is a part of modern JavaScript
   const gasAmount = Math.ceil(Number(gasLimit) * 0.125);
 
   const [txRawBytes, signDoc, txHash] = await create_and_sign_tx_direct(
@@ -66,6 +65,8 @@ let execute = async () => {
     txHash
   );
 
+  console.log(errorCode, responseText, result);
+
   if (result) {
     console.log(
       `Gas used: ${result.result ? result.result.gas_used : "unknown"}`
@@ -73,3 +74,5 @@ let execute = async () => {
   }
 };
 execute();
+
+// node --experimental-websocket execute.js
