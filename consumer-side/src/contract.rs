@@ -10,9 +10,13 @@ use anybuf::Anybuf;
 const SECRET_VRF_CONTRACT_ADDRESS: &str = "secret1up0mymn4993hgn7zpzu4je34w0n5s7l0mem7rk";
 const SECRET_VRF_VERIFICATION_KEY: &str = "BClOY6gcGjBCqeaFskrg0VIzptmyftgfY329GcZOvr3/eH/C4pJ4nH6ch6W/gjog8UErnEpIbMUOmElayUOxDas=";
 
-//Juno
+// //Juno
 const SECRET_TRANSFER_CHANNEL_ID: &str = "channel-8";
 const CHAIN_TRANSFER_CHANNEL_ID: &str = "channel-48";
+
+//Akash
+// const SECRET_TRANSFER_CHANNEL_ID: &str = "channel-54";
+// const CHAIN_TRANSFER_CHANNEL_ID: &str = "channel-7";
 
 //Archway
 //const SECRET_TRANSFER_CHANNEL_ID: &str = "channel-84";
